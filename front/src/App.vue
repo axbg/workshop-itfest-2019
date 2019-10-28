@@ -1,10 +1,16 @@
 <template>
   <div id="app">
-    <router-view/>
+    <div class="container">
+      <router-view/>
+    </div>
   </div>
 </template>
 
 <style>
+html, body, #app {
+  height: 100%;
+}
+
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -24,5 +30,12 @@
 
 #nav a.router-link-exact-active {
   color: #42b983;
+}
+
+.container {
+  height: 100%;
+  width: 100%;
+  text-align: center;
+  background-color: whitesmoke;
 }
 </style>
