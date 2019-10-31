@@ -2,10 +2,9 @@
   <div class="home-container">
     <p class="command">{{"\"" + command + "\""}}</p>
     <hr class="horizontal-line" />
-    <p class="answer">answer</p>
+    <p class="answer">{{answer}}</p>
     <div class="switch" @click="listen">
-      <md-icon class="md-size-3x" :class="{active: isActive}">mic</md-icon>
-      <md-icon class="md-size-3x" :class="{active: isActive}">mic</md-icon>
+      <md-icon class="md-size-3x custom-icon" :class="{active: isActive}">mic</md-icon>
     </div>
   </div>
 </template>
@@ -15,8 +14,8 @@ export default {
   name: "home",
   data: () => ({
     isActive: false,
-    command: "turn on the lights",
-    answer: "cool. done."
+    command: "Waiting for command...",
+    answer: ""
   }),
   methods: {
     listen: function() {
@@ -28,25 +27,28 @@ export default {
 
 <style>
 .home-container {
-  width: 100%;
-  height: 100%;
-  background-color: whitesmoke;
-  margin: 0 auto;
   display: inline-block;
 }
 .command {
   margin-top: 20vh;
-  font-size: 2em;
-}
-.answer {
-  margin-top: 5vh;
-  font-size: 1.6em;
+  font-size: 1.8em;
+  word-break: break-all;
 }
 .horizontal-line {
   width: 50%;
 }
+.answer {
+  font-size: 1.6em;
+}
 .switch {
-  margin-top: 50vh;
+  position: fixed;
+  width: 100%;
+  top: 85%;
+  left: 0;
+}
+.custom-icon {
+  border-radius: 50%;
+  border: 1px solid black;
 }
 .active {
   color: red !important;

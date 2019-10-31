@@ -1,11 +1,6 @@
 <template>
     <div class="login-container">
-        <md-card class="md-elevation-24">
-            <md-card-header>
-                <md-card-header-text>
-                    <div class="md-title">Login</div>
-                </md-card-header-text>
-            </md-card-header>
+        <md-card class="md-elevation-12">
             <md-card-content class="credentials-container">
                 <md-field md-clearable>
                     <label>Email</label>

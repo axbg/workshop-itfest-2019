@@ -10,19 +10,26 @@
 html, body, #app {
   height: 100%;
 }
-
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
+  color: black;
 }
-
+.container::before {
+    content: " ";
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.6; 
+    z-index: -1;
+    background-color: whitesmoke;
+}
 .container {
-  height: 100%;
   width: 100%;
-  text-align: center;
-  background-color: white;
+  height: 100%;
+  position: relative;
 }
 </style>
