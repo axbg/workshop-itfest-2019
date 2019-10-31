@@ -24,7 +24,10 @@ const router = new VueRouter({
 
 router.beforeEach((to, from, next) => {
   if (to.name !== "login" /* &&check if loggedin */) {
-    if(from.name === "login") {
+    if (from.name === "login") {
+      next();
+    } else {
+      // next("login");
       next();
     }
   } else {
