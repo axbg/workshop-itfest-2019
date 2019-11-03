@@ -1,11 +1,25 @@
 <template>
   <div class="home-container">
+    <md-drawer :md-active.sync="drawer" md-swipeable>
+      <md-toolbar class="md-transparent" md-elevation="0">
+        <h2>Your devices</h2>
+      </md-toolbar>
+      <md-list>
+        <md-list-item v-for="(device, index) in devices" :key="index">
+          <p>{{index + 1}}. {{device.name}}</p>
+        </md-list-item>
+      </md-list>
+    </md-drawer>
+
+    <div @click="openDrawer">
+      <md-icon class="md-size-2x drawer-icon">menu</md-icon>
+    </div>
     <div @click="logout">
       <md-icon class="md-size-2x logout-icon">clear</md-icon>
     </div>
     <p class="command">{{"\"" + command + "\""}}</p>
     <hr class="horizontal-line" />
-    <md-progress-spinner v-if="answer === null" md-mode="indeterminate" :md-diameter="30" ></md-progress-spinner>
+    <md-progress-spinner v-if="answer === null" md-mode="indeterminate" :md-diameter="30"></md-progress-spinner>
     <p class="answer" v-else>{{answer}}</p>
     <div class="switch" @click="listen">
       <md-icon class="md-size-3x custom-icon" :class="{active: isActive}">mic</md-icon>
@@ -18,12 +32,27 @@ export default {
   name: "home",
   data: () => ({
     recognition: null,
+    speaker: null,
     isActive: false,
     command: "Waiting for command...",
-    answer: ""
+    answer: "",
+    drawer: false,
+    devices: []
   }),
   methods: {
-    initSpeech: function() {
+    loadDevices: function() {
+      this.devices.push({ name: "Dorm Bulb" });
+    },
+    openDrawer: function() {
+      this.drawer = true;
+    },
+    logout: function() {
+      localStorage.removeItem("token");
+      location.reload();
+    },
+    initListen: function() {
+      this.speaker = window.speechSynthesis;
+
       window.SpeechRecognition =
         window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -39,8 +68,8 @@ export default {
         this.command = result.trim();
         this.answer = null;
         setTimeout(() => {
-          this.answer = "";
           this.answer = "yes";
+          this.speak();
         }, 1000);
       };
 
@@ -61,13 +90,29 @@ export default {
 
       this.isActive = !this.isActive;
     },
-    logout: function() {
-      localStorage.removeItem("token");
-      location.reload();
+    speak: function() {
+      console.log("speaking");
+      if (this.speaker.speaking) {
+        return;
+      }
+
+      const utter = new SpeechSynthesisUtterance(this.answer);
+
+      utter.onend = function(event) {
+        console.log("SpeechSynthesisUtterance.onend");
+      };
+      utter.onerror = function(event) {
+        console.log(event);
+      };
+
+      utter.pitch = 1;
+      utter.rate = 1;
+      this.speaker.speak(utter);
     }
   },
   mounted: function() {
-    this.initSpeech();
+    this.initListen();
+    this.loadDevices();
   }
 };
 </script>
@@ -77,10 +122,13 @@ export default {
   display: inline-block;
   width: 100%;
 }
+.drawer-icon {
+  float: left;
+  cursor: pointer;
+}
 .logout-icon {
   float: right;
   cursor: pointer;
-  display: block !important;
 }
 .command {
   margin-top: 20vh;
