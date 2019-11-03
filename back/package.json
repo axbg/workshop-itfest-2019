@@ -17,6 +17,7 @@
     "express": "^4.17.1",
     "kasa_control": "^0.1.0",
     "nodemon": "^1.19.4",
+    "tplink-smarthome-api": "^1.2.0",
     "uuid": "^3.3.3"
   }
 }
