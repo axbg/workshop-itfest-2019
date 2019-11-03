@@ -1,7 +1,5 @@
 const services = require("./services");
-const dialogflow = require("dialogflow");
 const uuid = require("uuid");
-const axios = require("axios");
 const projectId = require("./config").projectId;
 const KasaControl = require('kasa_control');
 const loggedUsers = new Map();
@@ -24,21 +22,11 @@ module.exports = {
     res.status(200).send({ token: userToken });
   },
   logout: (req, res) => {
-    if (!req.headers.authorization) {
-      return res.status(403).send();
-    }
-
-    const token = req.headers.authorization.split(" ")[1];
-    loggedUsers.delete(token);
+    loggedUsers.delete(req.token);
     res.status(200).send();
   },
   getDevices: async (req, res) => {
-    if (!req.headers.authorization) {
-      return res.status(403).send();
-    }
-
-    const token = req.headers.authorization.split(" ")[1];
-    const user = loggedUsers.get(token);
+    const user = loggedUsers.get(req.token);
 
     if (!user) {
       return res.status(403).send();
@@ -47,37 +35,22 @@ module.exports = {
     const devices = await user.kasa.getDevices();
     res.status(200).send({ devices: devices });
   },
-  test: async (req, res) => {
-    const sessionId = uuid.v4();
-    const sessionClient = new dialogflow.SessionsClient();
-    const sessionPath = sessionClient.sessionPath(projectId, sessionId);
-    const request = {
-      session: sessionPath,
-      queryInput: {
-        text: {
-          text: "Vreau mov!",
-          languageCode: "en-US"
-        }
-      }
-    };
-    const responses = await sessionClient.detectIntent(request);
-    console.log("Detect intent");
-    const result = responses[0].queryResult;
-    console.log(`Query: ${result.queryText}`);
-    console.log(`Response: ${result.fulfillmentText}`);
-    //aici pt bec 
-    const client = new Client();
-    client.startDiscovery().on('device-new', (device) => {
-      device.getSysInfo().then(console.log);
-      device.setPowerState(true);
-    });
-    //tb trimis request ul ca sa schimbam lumina 
-    console.log(breeds);
-    if (result.intent) {
-      console.log(`  Intent: ${result.intent.displayName}`);
-    } else {
-      console.log(`  No intent matched.`);
+  processCommand: async (req, res) => {
+    const user = loggedUsers.get(req.token);
+
+    if (!user) {
+      return res.status(403).send();
     }
-    res.status(200).send(services.test());
+
+    //dialogResponse should contain both the final message and the extracted params
+    const dialogResponse = await services.callDialogflow(projectId, token, req.body.command);
+
+    try {
+      await services.controlDevice(user, dialogResponse);
+    } catch (ex) {
+      return res.status(400).send({ message: "An error occured" });
+    }
+
+    res.status(200).send({ message: "Done" });
   }
 };
