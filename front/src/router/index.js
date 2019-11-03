@@ -23,16 +23,16 @@ const router = new VueRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  if (to.name !== "login" /* &&check if loggedin */) {
-    if (from.name === "login") {
-      next();
+  if (localStorage.getItem("token")) {
+    if (to.name === "login") {
+      next("/")
     } else {
-      // next("login");
       next();
     }
-  } else {
-    //if jwt present redirect to home
+  } else if (to.name === "login") {
     next();
+  } else {
+    next("/login");
   }
 });
 
