@@ -1,5 +1,4 @@
-const PORT = 8080;
-
 module.exports = {
-    PORT
+    PORT: 8000,
+    projectId: "test-pcpvuw"
 }
