@@ -42,15 +42,12 @@ module.exports = {
       return res.status(403).send();
     }
 
-    //dialogResponse should contain both the final message and the extracted params
-    const dialogResponse = await services.callDialogflow(projectId, token, req.body.command);
-
     try {
-      await services.controlDevice(user, dialogResponse);
+      const dialogResponse = await services.callDialogflow(projectId, req.token, req.body.command);
+      await services.controlDevice(user, dialogResponse.parameters);
+      res.status(200).send({ message: dialogResponse.message });
     } catch (ex) {
-      return res.status(400).send({ message: "An error occured" });
+      return res.status(400).send({ message: ex.message });
     }
-
-    res.status(200).send({ message: "Done" });
   }
 };
