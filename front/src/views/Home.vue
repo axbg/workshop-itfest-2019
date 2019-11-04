@@ -6,12 +6,12 @@
       </md-toolbar>
       <md-list>
         <md-list-item v-for="(device, index) in devices" :key="index">
-          <p>{{index + 1}}. {{device.name}}</p>
+          <p>{{index + 1}}. {{device.alias}}</p>
         </md-list-item>
       </md-list>
     </md-drawer>
 
-    <div @click="openDrawer">
+    <div v-on:click="openDrawer">
       <md-icon class="md-size-2x drawer-icon">menu</md-icon>
     </div>
     <div @click="logout">
@@ -39,9 +39,15 @@ export default {
     drawer: false,
     devices: []
   }),
+  props: ['baseUrl'],
   methods: {
-    loadDevices: function() {
-      this.devices.push({ name: "Dorm Bulb" });
+    getHeaders: function() {
+      const token = localStorage.getItem("token");
+      return { headers: { authorization: "Bearer " + token }};
+    },
+    loadDevices: async function() {
+      const response = await this.$axios.get(this.baseUrl + "/devices", this.getHeaders())
+      this.devices = response.data.devices;
     },
     openDrawer: function() {
       this.drawer = true;
@@ -50,7 +56,7 @@ export default {
       localStorage.removeItem("token");
       location.reload();
     },
-    initListen: function() {
+    initListen: async function() {
       this.speaker = window.speechSynthesis;
 
       window.SpeechRecognition =
@@ -62,15 +68,14 @@ export default {
       this.recognition.interimResults = false;
       this.recognition.maxAlternatives = 1;
 
-      this.recognition.onresult = event => {
+      this.recognition.onresult = async (event) => {
         const last = event.results.length - 1;
         const result = event.results[last][0].transcript;
         this.command = result.trim();
         this.answer = null;
-        setTimeout(() => {
-          this.answer = "yes";
-          this.speak();
-        }, 1000);
+        
+        const response = await this.$axios.post(this.baseUrl + "/command", {command: this.command}, this.getHeaders());
+        this.answer = response.data.message;
       };
 
       this.recognition.onnomatch = event => {

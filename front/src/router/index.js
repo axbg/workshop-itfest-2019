@@ -5,16 +5,19 @@ import Login from '../views/Login.vue'
 
 Vue.use(VueRouter)
 
+const baseUrl = "http://localhost:8000";
 const routes = [
   {
     path: '/',
     name: 'home',
-    component: Home
+    component: Home,
+    props: { baseUrl: baseUrl }
   },
   {
     path: '/login',
     name: 'login',
-    component: Login
+    component: Login,
+    props: { baseUrl: baseUrl }
   }
 ]
 

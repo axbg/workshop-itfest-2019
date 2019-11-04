@@ -19,30 +19,41 @@
 <script>
 export default {
   name: "login",
+  props: ["baseUrl"],
   data: () => ({
     email: "",
     password: ""
   }),
   methods: {
-    login: function() {
-        if (this.email === "" || !this.email.includes("@") || !this.email.includes(".")) {
-            this.email = "";
-            this.$refs.email.$el.focus();
-            this.$toasted.show("Email is not valid");
-            return;
-        }
+    login: async function() {
+      if (
+        this.email === "" ||
+        !this.email.includes("@") ||
+        !this.email.includes(".")
+      ) {
+        this.email = "";
+        this.$refs.email.$el.focus();
+        this.$toasted.show("Email is not valid");
+        return;
+      }
 
-        if (this.password === "") {
-            this.password = "";
-            this.$refs.password.$el.focus();
-            this.$toasted.show("Password cannot be empty");
-            return;
-        }
+      if (this.password === "") {
+        this.password = "";
+        this.$refs.password.$el.focus();
+        this.$toasted.show("Password cannot be empty");
+        return;
+      }
 
-      //check if user can login
-      //if it does, save the token in localStorage
-      localStorage.setItem("token", "asdasvasv123123");
-      this.$router.push({ name: "home" });
+      try {
+        const response = await this.$axios.post(this.baseUrl + "/login", {
+          email: this.email,
+          password: this.password
+        });
+        localStorage.setItem("token", response.data.token);
+        this.$router.push({ name: "home" });
+      } catch (ex) {
+        this.$toasted.show("Incorrect credentials");
+      }
     }
   }
 };
