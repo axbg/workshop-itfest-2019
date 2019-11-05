@@ -39,14 +39,17 @@ export default {
     drawer: false,
     devices: []
   }),
-  props: ['baseUrl'],
+  props: ["baseUrl"],
   methods: {
     getHeaders: function() {
       const token = localStorage.getItem("token");
-      return { headers: { authorization: "Bearer " + token }};
+      return { headers: { authorization: "Bearer " + token } };
     },
     loadDevices: async function() {
-      const response = await this.$axios.get(this.baseUrl + "/devices", this.getHeaders())
+      const response = await this.$axios.get(
+        this.baseUrl + "/devices",
+        this.getHeaders()
+      );
       this.devices = response.data.devices;
     },
     openDrawer: function() {
@@ -65,17 +68,30 @@ export default {
       this.recognition = new SpeechRecognition();
       this.recognition.continuous = true;
       this.recognition.lang = "en-US";
-      this.recognition.interimResults = false;
+      this.recognition.interimResults = true;
       this.recognition.maxAlternatives = 1;
 
-      this.recognition.onresult = async (event) => {
+      this.recognition.onresult = async event => {
         const last = event.results.length - 1;
         const result = event.results[last][0].transcript;
+        const isFinal = event.results[last].isFinal;
         this.command = result.trim();
-        this.answer = null;
-        
-        const response = await this.$axios.post(this.baseUrl + "/command", {command: this.command}, this.getHeaders());
-        this.answer = response.data.message;
+
+        if (isFinal) {
+          this.answer = null;
+          try {
+            const response = await this.$axios.post(
+              this.baseUrl + "/command",
+              { command: this.command },
+              this.getHeaders()
+            );
+            this.answer = response.data.message;
+          } catch (ex) {
+            this.answer = ex.response.data.message;
+          } finally {
+            this.speak();
+          }
+        }
       };
 
       this.recognition.onnomatch = event => {
@@ -96,22 +112,22 @@ export default {
       this.isActive = !this.isActive;
     },
     speak: function() {
-      console.log("speaking");
       if (this.speaker.speaking) {
         return;
       }
 
-      const utter = new SpeechSynthesisUtterance(this.answer);
+      this.recognition.stop();
 
-      utter.onend = function(event) {
-        console.log("SpeechSynthesisUtterance.onend");
+      const utter = new SpeechSynthesisUtterance(this.answer);
+      utter.pitch = 1;
+      utter.rate = 1;
+      utter.onend = event => {
+        this.recognition.start();
       };
       utter.onerror = function(event) {
         console.log(event);
       };
 
-      utter.pitch = 1;
-      utter.rate = 1;
       this.speaker.speak(utter);
     }
   },
